@@ -43,9 +43,16 @@ namespace Booking_Airline.Controllers
                 };
                 return new BadRequestObjectResult(error);
             }
-            var result = await userRepository.VerifyAccount(request);
+            var result = await userRepository.VerifyAccount(request, Response.Cookies);
             return result;
 
+        }
+        [HttpGet]
+        [Route("/user/getNewToken")]
+        public async Task<IActionResult> GetNewToken()
+        {
+            var result = await userRepository.GetNewAccessToken(Request.Cookies,Response.Cookies);
+            return result;
         }
 
     }

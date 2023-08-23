@@ -10,5 +10,6 @@
         public string VerifyCode { get; set; }
         public bool IsVerified { get; set; }
         public ICollection<RoleModel> Roles { get; set; }
+        public ICollection<RefreshToken> refreshTokens { get; set; }
     }
 }

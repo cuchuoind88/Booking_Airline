@@ -3,11 +3,33 @@ using Booking_Airline.Repository.EmailService;
 using Booking_Airline.Repository.UserService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+ConfigurationManager configuration = builder.Configuration;
+var CheckRefreshToken = new TokenValidationParameters()
+{
+    ValidateAudience = false,
+    ValidateIssuer = false,
+    ClockSkew = TimeSpan.Zero,
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey =  new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JWT:RefreshKey"])),
+    ValidateLifetime = true
+};
+var tokenWithFullCheck= new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+{
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration.GetSection("Jwtconfig").GetValue<string>("SecretKey"))),
+    RequireExpirationTime = true,
+    ValidAudience = configuration["JWT:ValidAudience"],
+    ValidIssuer = configuration["JWT:ValidIssuer"],
+    ClockSkew = TimeSpan.Zero
+};
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -29,20 +51,14 @@ builder.Services.AddAuthentication(options =>
 )
 .AddJwtBearer(options =>
 {
-    var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("Jwtconfig").GetValue<string>("SecretKey"));
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-    {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = false,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        RequireExpirationTime = false//use for dev-environment , apply when use RefreshToken
-    };
+
+    options.TokenValidationParameters = tokenWithFullCheck;
 });
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IUserModelFactory, UserModelFactory>();
+builder.Services.AddSingleton(tokenWithFullCheck);
+builder.Services.AddSingleton(CheckRefreshToken);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

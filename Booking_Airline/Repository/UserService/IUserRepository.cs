@@ -8,6 +8,7 @@ namespace Booking_Airline.Repository.UserService
     {
         public Task<IActionResult> Register(UserRegisterDTO request);
         public Task<IActionResult> Login(UserLoginDTO request);
-        public Task<IActionResult> VerifyAccount(UserVerifyDTO request);
+        public Task<IActionResult> VerifyAccount(UserVerifyDTO request, IResponseCookies cookies);
+        public Task<IActionResult> GetNewAccessToken(IRequestCookieCollection cookies, IResponseCookies resCookies);
     }
 }
