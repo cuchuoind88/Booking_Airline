@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OtpNet;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
@@ -28,7 +29,6 @@ namespace Booking_Airline.Repository.UserService
         private readonly IEmailRepository _emailRepro;
         private readonly TokenValidationParameters _CheckRefreshToken;
        
-        
         public UserRepository(ApplicationDbContext context, IOptions<JWTConfig> options, IUserModelFactory userModelFactory, IEmailRepository emailRepro, IConfiguration config,
             TokenValidationParameters CheckRefreshToken)
         {
@@ -41,9 +41,40 @@ namespace Booking_Airline.Repository.UserService
             
         }
 
-        public Task<IActionResult> Login(UserLoginDTO request)
+        public async  Task<IActionResult> Login(UserLoginDTO request, IRequestCookieCollection cookies, IResponseCookies resCookies)
         {
-            throw new NotImplementedException();
+            //var user=await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
+            // if(user==null)
+            // {
+            //     var error = new ErrorModel
+            //     {
+            //         StatusCode = 401, // Mã lỗi BadRequest,
+            //         Message = "User not found"
+            //     };
+            //     return new BadRequestObjectResult(error);
+            // }
+            // if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            // {
+            //     var error = new ErrorModel
+            //     {
+            //         StatusCode = 401, // Mã lỗi BadRequest,
+            //         Message = "Wrong Password"
+            //     };
+            //     return new BadRequestObjectResult(error);
+            // }
+            // var refreshToken = cookies["refreshToken"];
+            // if(refreshToken != null)
+            // {
+            //     //Check token reuse?
+
+            // }
+            var error = new ErrorModel
+            {
+                StatusCode = 401, // Mã lỗi BadRequest,
+                Message = "Wrong Password"
+            };
+            return new BadRequestObjectResult(error);
+
         }
 
         public async Task<IActionResult> Register(UserRegisterDTO request)
@@ -158,20 +189,14 @@ namespace Booking_Airline.Repository.UserService
             var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_config["JWT:RefreshKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                IssuedAt = DateTime.UtcNow, // Thêm thông tin thời gian tạo token
-                Expires = DateTime.UtcNow.AddSeconds(15),
-                SigningCredentials = creds,
-                Issuer = _config["JWT:ValidIssuer"],
-                Audience = _config["JWT:ValidAudience"]
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var jwt = tokenHandler.WriteToken(token);
-
+            var token = new JwtSecurityToken(
+                claims:claims,
+                expires: DateTime.UtcNow.AddSeconds(15),
+                signingCredentials : creds,
+                issuer: _config["JWT:ValidIssuer"],
+                audience: _config["JWT:ValidAudience"]
+                );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return new RefreshToken()
             {
                 Token = jwt,
@@ -205,13 +230,13 @@ namespace Booking_Airline.Repository.UserService
                 return new BadRequestObjectResult(error);
             }
             var foundedUser = await _context.Users.Where(user => user.refreshTokens.Any(rf => rf.Token == refreshToken && rf.IsUsed == false)).FirstOrDefaultAsync();
-            var principal = GetPrincipalFromToken(refreshToken);
+           
             if (foundedUser == null)
             {
                 //Có 2 trường hợp :
                 //TH1:Token không khớp với token đã được cấp
                 //TH2:Token đã được sử dụng(khả năng token bị đánh cắp)
-               
+                var principal = GetPrincipalFromExpriedToken(refreshToken);
                 if (principal==null)//TH1
                 {
                     return new BadRequestObjectResult("Invalid token");
@@ -230,11 +255,11 @@ namespace Booking_Airline.Repository.UserService
             else
             {
                 //Kiem tra token expired
-             
-               
-                if (principal==null)
+                var tokenHandler2 = new JwtSecurityTokenHandler();
+                var principal2 = tokenHandler2.ValidateToken(refreshToken, _CheckRefreshToken, out SecurityToken SecurityToken);
+                if (principal2==null)
                 {
-                    return new BadRequestObjectResult("Token is expired");
+                    return new BadRequestObjectResult("Invalid token");
                 }
                 var tokenIsUsed = await _context.RefreshTokens.FirstOrDefaultAsync(rf => rf.Token == refreshToken);
                 tokenIsUsed.IsUsed= true;
@@ -246,7 +271,7 @@ namespace Booking_Airline.Repository.UserService
                     Secure = false // Only for local
                 };
                 resCookies.Append("refreshToken", "", cookieOptions);
-                var roleClaims = principal.FindAll(ClaimTypes.Role).ToList();
+                var roleClaims = principal2.FindAll(ClaimTypes.Role).ToList();
                 var RoleNames= roleClaims.Select(claim => claim.Value).ToList();
                 var newAccessToken = CreateToken(foundedUser, RoleNames);
                 await SetRefreshToken(GenerateRefreshToken(foundedUser),resCookies);
@@ -259,11 +284,22 @@ namespace Booking_Airline.Repository.UserService
             }
 
         }
-        private ClaimsPrincipal? GetPrincipalFromToken(string token)
+        private ClaimsPrincipal? GetPrincipalFromExpriedToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, _CheckRefreshToken, out SecurityToken validatedToken);
-            return principal;
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_config["JWT:RefreshKey"])),
+                ValidateLifetime = false//Disable LifeTime-Accept expried token for check reuse
+            };
+                    var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
+                    return principal;
+
+           
+            
         }
     }
 }

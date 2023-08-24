@@ -9,15 +9,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
-var CheckRefreshToken = new TokenValidationParameters()
-{
-    ValidateAudience = false,
-    ValidateIssuer = false,
-    ClockSkew = TimeSpan.Zero,
-    ValidateIssuerSigningKey = true,
-    IssuerSigningKey =  new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JWT:RefreshKey"])),
-    ValidateLifetime = true
-};
 var tokenWithFullCheck= new Microsoft.IdentityModel.Tokens.TokenValidationParameters
 {
     ValidateIssuer = true,
@@ -29,6 +20,20 @@ var tokenWithFullCheck= new Microsoft.IdentityModel.Tokens.TokenValidationParame
     ValidAudience = configuration["JWT:ValidAudience"],
     ValidIssuer = configuration["JWT:ValidIssuer"],
     ClockSkew = TimeSpan.Zero
+};
+var checkRefreshToken= new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+{
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["JWT:RefreshKey"])),
+    RequireExpirationTime = true,
+    ValidAudience = configuration["JWT:ValidAudience"],
+    ValidIssuer = configuration["JWT:ValidIssuer"],
+    ClockSkew = TimeSpan.Zero
+
+
 };
 // Add services to the container.
 
@@ -57,8 +62,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IUserModelFactory, UserModelFactory>();
-builder.Services.AddSingleton(tokenWithFullCheck);
-builder.Services.AddSingleton(CheckRefreshToken);
+builder.Services.AddSingleton(checkRefreshToken);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
