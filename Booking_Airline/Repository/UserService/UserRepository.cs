@@ -28,7 +28,7 @@ namespace Booking_Airline.Repository.UserService
         public readonly IConfiguration _config;
         private readonly IEmailRepository _emailRepro;
         private readonly TokenValidationParameters _CheckRefreshToken;
-       
+
         public UserRepository(ApplicationDbContext context, IOptions<JWTConfig> options, IUserModelFactory userModelFactory, IEmailRepository emailRepro, IConfiguration config,
             TokenValidationParameters CheckRefreshToken)
         {
@@ -36,12 +36,12 @@ namespace Booking_Airline.Repository.UserService
             this.options = options;
             _userModelFactory = userModelFactory;
             _emailRepro = emailRepro;
-            _config=config;
+            _config = config;
             _CheckRefreshToken = CheckRefreshToken;
-            
+
         }
 
-        public async  Task<IActionResult> Login(UserLoginDTO request, IRequestCookieCollection cookies, IResponseCookies resCookies)
+        public async Task<IActionResult> Login(UserLoginDTO request, IRequestCookieCollection cookies, IResponseCookies resCookies)
         {
             var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
             if (user == null)
@@ -84,7 +84,7 @@ namespace Booking_Airline.Repository.UserService
                     var tokenIsUsed = await _context.RefreshTokens.FirstOrDefaultAsync(rf => rf.Token == refreshToken);
                     tokenIsUsed.IsUsed = true;
                     await _context.SaveChangesAsync();
-                } 
+                }
             }
             var RoleNames = await _context.Roles.Where(role => role.Users.Any(user => user.Id == user.Id)).Select(role => role.RoleName).ToListAsync();
             string jwt = CreateToken(user, RoleNames);
@@ -133,7 +133,7 @@ namespace Booking_Airline.Repository.UserService
 
         }
 
-        public async Task<IActionResult> VerifyAccount(UserVerifyDTO request,IResponseCookies cookies)
+        public async Task<IActionResult> VerifyAccount(UserVerifyDTO request, IResponseCookies cookies)
         {
             var existsUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (existsUser == null)
@@ -151,11 +151,12 @@ namespace Booking_Airline.Repository.UserService
                 {
                     existsUser.IsVerified = true;
                     await _context.SaveChangesAsync();
-                    var RoleNames =await _context.Roles.Where(role => role.Users.Any(user => user.Id == existsUser.Id)).Select(role => role.RoleName).ToListAsync();
-                    string jwt=CreateToken(existsUser,RoleNames);
-                    await SetRefreshToken(GenerateRefreshToken(existsUser),cookies);
+                    var RoleNames = await _context.Roles.Where(role => role.Users.Any(user => user.Id == existsUser.Id)).Select(role => role.RoleName).ToListAsync();
+                    string jwt = CreateToken(existsUser, RoleNames);
+                    await SetRefreshToken(GenerateRefreshToken(existsUser), cookies);
 
-                    return new OkObjectResult(new {
+                    return new OkObjectResult(new
+                    {
                         AccessToken = jwt,
                         Message = "Authentication successful"
                     });
@@ -173,31 +174,31 @@ namespace Booking_Airline.Repository.UserService
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         }
-        private string CreateToken (User request , List<string> RoleNames)
+        private string CreateToken(User request, List<string> RoleNames)
         {
-            List < Claim > claims= new List<Claim>()
+            List<Claim> claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name,request.Username),
                 new Claim(ClaimTypes.Email,request.Email),
             };
-            foreach(string role in RoleNames)
+            foreach (string role in RoleNames)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
-            var key = new SymmetricSecurityKey( Encoding.ASCII.GetBytes(options.Value.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(options.Value.SecretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
             var token = new JwtSecurityToken(
                 claims: claims,
                 signingCredentials: creds,
-                expires:DateTime.UtcNow.AddMinutes(5),
+                expires: DateTime.UtcNow.AddMinutes(5),
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"]
-               
+
                 );
-            var jwt=new JwtSecurityTokenHandler().WriteToken(token);
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
         }
-        private RefreshToken GenerateRefreshToken (User request)
+        private RefreshToken GenerateRefreshToken(User request)
         {
             List<Claim> claims = new List<Claim>()
             {
@@ -209,9 +210,9 @@ namespace Booking_Airline.Repository.UserService
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
             var token = new JwtSecurityToken(
-                claims:claims,
+                claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(6),
-                signingCredentials : creds,
+                signingCredentials: creds,
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"]
                 );
@@ -223,7 +224,7 @@ namespace Booking_Airline.Repository.UserService
                 IsUsed = false
             };
         }
-        private async Task SetRefreshToken(RefreshToken refreshToken , IResponseCookies cookies)
+        private async Task SetRefreshToken(RefreshToken refreshToken, IResponseCookies cookies)
         {
             var cookieOptions = new CookieOptions
             {
@@ -236,7 +237,7 @@ namespace Booking_Airline.Repository.UserService
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IActionResult> GetNewAccessToken(IRequestCookieCollection cookies , IResponseCookies resCookies)
+        public async Task<IActionResult> GetNewAccessToken(IRequestCookieCollection cookies, IResponseCookies resCookies)
         {   //Refresh Token Rotation
             var refreshToken = cookies["refreshToken"];
             if (refreshToken == null)
@@ -255,7 +256,7 @@ namespace Booking_Airline.Repository.UserService
                 //TH1:Token không khớp với token đã được cấp
                 //TH2:Token đã được sử dụng(khả năng token bị đánh cắp)
                 var principal = GetPrincipalFromExpriedToken(refreshToken);
-                if (principal==null)//TH1
+                if (principal == null)//TH1
                 {
                     return new BadRequestObjectResult("Invalid token");
                 }
@@ -275,12 +276,12 @@ namespace Booking_Airline.Repository.UserService
                 //Kiem tra token expired
                 var tokenHandler2 = new JwtSecurityTokenHandler();
                 var principal2 = tokenHandler2.ValidateToken(refreshToken, _CheckRefreshToken, out SecurityToken SecurityToken);
-                if (principal2==null)
+                if (principal2 == null)
                 {
                     return new BadRequestObjectResult("Invalid token");
                 }
                 var tokenIsUsed = await _context.RefreshTokens.FirstOrDefaultAsync(rf => rf.Token == refreshToken);
-                tokenIsUsed.IsUsed= true;
+                tokenIsUsed.IsUsed = true;
                 await _context.SaveChangesAsync();
                 var cookieOptions = new CookieOptions
                 {
@@ -290,9 +291,9 @@ namespace Booking_Airline.Repository.UserService
                 };
                 resCookies.Append("refreshToken", "", cookieOptions);
                 var roleClaims = principal2.FindAll(ClaimTypes.Role).ToList();
-                var RoleNames= roleClaims.Select(claim => claim.Value).ToList();
+                var RoleNames = roleClaims.Select(claim => claim.Value).ToList();
                 var newAccessToken = CreateToken(foundedUser, RoleNames);
-                await SetRefreshToken(GenerateRefreshToken(foundedUser),resCookies);
+                await SetRefreshToken(GenerateRefreshToken(foundedUser), resCookies);
                 return new OkObjectResult(new
                 {
                     AccessToken = newAccessToken,
@@ -313,8 +314,24 @@ namespace Booking_Airline.Repository.UserService
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_config["JWT:RefreshKey"])),
                 ValidateLifetime = false//Disable LifeTime-Accept expried token for check reuse
             };
-                    var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
-                    return principal;
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
+            return principal;
+        }
+
+        public async Task<IActionResult> Logout(IRequestCookieCollection cookies, IResponseCookies resCookies)
+        {
+            var refreshToken = cookies["refreshToken"];
+            if (refreshToken != null)
+            {   //Update refresh token TO Invalid State
+                var tokenIsUsed = await _context.RefreshTokens.FirstOrDefaultAsync(rf => rf.Token == refreshToken);
+                tokenIsUsed.IsUsed = true;
+                await _context.SaveChangesAsync();
+            }
+            //DELETE COOKIES
+            resCookies.Delete("refreshToken");
+            return new StatusCodeResult(204);
         }
     }
-}
+    } 
+    
+

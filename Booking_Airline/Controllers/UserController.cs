@@ -62,6 +62,12 @@ namespace Booking_Airline.Controllers
             var result = await userRepository.Login(request, Request.Cookies, Response.Cookies);
             return result;
         }
-
+        [HttpGet]
+        [Route("/user/logout")]
+        public async Task<IActionResult> LogoutAccount()
+        {
+            var result = await userRepository.Logout(Request.Cookies, Response.Cookies);
+            return result;
+        }
     }
 }
