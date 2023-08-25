@@ -1,4 +1,5 @@
-﻿using Booking_Airline.DTOs;
+﻿using Azure;
+using Booking_Airline.DTOs;
 using Booking_Airline.Models;
 using Booking_Airline.Repository.UserService;
 using Microsoft.AspNetCore.Mvc;
@@ -52,6 +53,13 @@ namespace Booking_Airline.Controllers
         public async Task<IActionResult> GetNewToken()
         {
             var result = await userRepository.GetNewAccessToken(Request.Cookies,Response.Cookies);
+            return result;
+        }
+        [HttpPost]
+        [Route("/user/login")]
+        public async Task<IActionResult> LoginAccount([FromBody] UserLoginDTO request)
+        {
+            var result = await userRepository.Login(request, Request.Cookies, Response.Cookies);
             return result;
         }
 

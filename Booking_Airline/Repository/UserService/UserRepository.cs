@@ -43,38 +43,57 @@ namespace Booking_Airline.Repository.UserService
 
         public async  Task<IActionResult> Login(UserLoginDTO request, IRequestCookieCollection cookies, IResponseCookies resCookies)
         {
-            //var user=await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
-            // if(user==null)
-            // {
-            //     var error = new ErrorModel
-            //     {
-            //         StatusCode = 401, // Mã lỗi BadRequest,
-            //         Message = "User not found"
-            //     };
-            //     return new BadRequestObjectResult(error);
-            // }
-            // if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
-            // {
-            //     var error = new ErrorModel
-            //     {
-            //         StatusCode = 401, // Mã lỗi BadRequest,
-            //         Message = "Wrong Password"
-            //     };
-            //     return new BadRequestObjectResult(error);
-            // }
-            // var refreshToken = cookies["refreshToken"];
-            // if(refreshToken != null)
-            // {
-            //     //Check token reuse?
-
-            // }
-            var error = new ErrorModel
+            var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
+            if (user == null)
             {
-                StatusCode = 401, // Mã lỗi BadRequest,
-                Message = "Wrong Password"
-            };
-            return new BadRequestObjectResult(error);
-
+                var error = new ErrorModel
+                {
+                    StatusCode = 401, // Mã lỗi BadRequest,
+                    Message = "User not found"
+                };
+                return new BadRequestObjectResult(error);
+            }
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            {
+                var error = new ErrorModel
+                {
+                    StatusCode = 401, // Mã lỗi BadRequest,
+                    Message = "Invalid Acoount Or Password"
+                };
+                return new BadRequestObjectResult(error);
+            }
+            var refreshToken = cookies["refreshToken"];
+            if (refreshToken != null)
+            {
+                //Check token reuse?
+                var foundedUser = await _context.Users.Where(user => user.refreshTokens.Any(rf => rf.Token == refreshToken && rf.IsUsed == false)).FirstOrDefaultAsync();
+                if (foundedUser == null)
+                {
+                    var principal = GetPrincipalFromExpriedToken(refreshToken);
+                    //If principal return object ClaimsPrincipal => Token is Used in the part 
+                    //Update all family token to INVALID
+                    var tokensToUpdate = _context.RefreshTokens.Where(t => t.UserId == int.Parse(principal.FindFirst("UserId").Value));
+                    foreach (var token in tokensToUpdate)
+                    {
+                        token.IsUsed = true;
+                    }
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {   //Update to state token equal "invalid" <=> IsUsed=True
+                    var tokenIsUsed = await _context.RefreshTokens.FirstOrDefaultAsync(rf => rf.Token == refreshToken);
+                    tokenIsUsed.IsUsed = true;
+                    await _context.SaveChangesAsync();
+                } 
+            }
+            var RoleNames = await _context.Roles.Where(role => role.Users.Any(user => user.Id == user.Id)).Select(role => role.RoleName).ToListAsync();
+            string jwt = CreateToken(user, RoleNames);
+            await SetRefreshToken(GenerateRefreshToken(user), resCookies);
+            return new OkObjectResult(new
+            {
+                AccessToken = jwt,
+                Message = "Authentication successful"
+            });
         }
 
         public async Task<IActionResult> Register(UserRegisterDTO request)
@@ -191,7 +210,7 @@ namespace Booking_Airline.Repository.UserService
 
             var token = new JwtSecurityToken(
                 claims:claims,
-                expires: DateTime.UtcNow.AddSeconds(15),
+                expires: DateTime.UtcNow.AddMinutes(6),
                 signingCredentials : creds,
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"]
@@ -230,7 +249,6 @@ namespace Booking_Airline.Repository.UserService
                 return new BadRequestObjectResult(error);
             }
             var foundedUser = await _context.Users.Where(user => user.refreshTokens.Any(rf => rf.Token == refreshToken && rf.IsUsed == false)).FirstOrDefaultAsync();
-           
             if (foundedUser == null)
             {
                 //Có 2 trường hợp :
@@ -297,9 +315,6 @@ namespace Booking_Airline.Repository.UserService
             };
                     var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
                     return principal;
-
-           
-            
         }
     }
 }
