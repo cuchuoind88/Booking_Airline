@@ -3,6 +3,7 @@ using Azure.Core;
 using Booking_Airline.DTOs;
 using Booking_Airline.Models;
 using Booking_Airline.Repository.EmailService;
+using Booking_Airline.Repository.ErrorService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -24,13 +25,14 @@ namespace Booking_Airline.Repository.UserService
     {
         public ApplicationDbContext _context;
         public IUserModelFactory _userModelFactory;
+        public IErrorHandling _errorHandling;
         private readonly IOptions<JWTConfig> options;
         public readonly IConfiguration _config;
         private readonly IEmailRepository _emailRepro;
         private readonly TokenValidationParameters _CheckRefreshToken;
 
         public UserRepository(ApplicationDbContext context, IOptions<JWTConfig> options, IUserModelFactory userModelFactory, IEmailRepository emailRepro, IConfiguration config,
-            TokenValidationParameters CheckRefreshToken)
+            TokenValidationParameters CheckRefreshToken,IErrorHandling errorHandling)
         {
             _context = context;
             this.options = options;
@@ -38,7 +40,7 @@ namespace Booking_Airline.Repository.UserService
             _emailRepro = emailRepro;
             _config = config;
             _CheckRefreshToken = CheckRefreshToken;
-
+            _errorHandling = errorHandling;
         }
 
         public async Task<IActionResult> Login(UserLoginDTO request, IRequestCookieCollection cookies, IResponseCookies resCookies)
@@ -46,21 +48,19 @@ namespace Booking_Airline.Repository.UserService
             var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
             if (user == null)
             {
-                var error = new ErrorModel
-                {
-                    StatusCode = 401, // Mã lỗi BadRequest,
-                    Message = "User not found"
-                };
-                return new BadRequestObjectResult(error);
+                
+                return _errorHandling.GetBadRequestResult("User not found", 401);
+            }
+            if (user.IsVerified == false)
+            {
+                return _errorHandling.GetBadRequestResult("User not verified", 401);
+
             }
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
-                var error = new ErrorModel
-                {
-                    StatusCode = 401, // Mã lỗi BadRequest,
-                    Message = "Invalid Acoount Or Password"
-                };
-                return new BadRequestObjectResult(error);
+
+                return _errorHandling.GetBadRequestResult("Invalid Acoount Or Password", 401);
+           
             }
             var refreshToken = cookies["refreshToken"];
             if (refreshToken != null)
@@ -101,12 +101,8 @@ namespace Booking_Airline.Repository.UserService
             var userExists = await _context.Users.FirstOrDefaultAsync(user => user.Email == request.Email);
             if (userExists != null)
             {
-                var error = new ErrorModel
-                {
-                    StatusCode = 400, // Mã lỗi BadRequest,
-                    Message = "User already exists."
-                };
-                return new BadRequestObjectResult(error);
+              
+                return _errorHandling.GetBadRequestResult("User already exists.", 401);
             }
             string salt = BCrypt.Net.BCrypt.GenerateSalt();
             string hashPassword = BCrypt.Net.BCrypt.HashPassword(request.Password, salt);
@@ -138,12 +134,8 @@ namespace Booking_Airline.Repository.UserService
             var existsUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (existsUser == null)
             {
-                var error = new ErrorModel
-                {
-                    StatusCode = 400, // Mã lỗi BadRequest,
-                    Message = "User not exists."
-                };
-                return new BadRequestObjectResult(error);
+              
+                return _errorHandling.GetBadRequestResult("User not exists.", 400);
             }
             else
             {
@@ -167,7 +159,7 @@ namespace Booking_Airline.Repository.UserService
                     StatusCode = 400, // Mã lỗi BadRequest,
                     Message = "Verify token failed"
                 };
-                return new BadRequestObjectResult(error);
+                return _errorHandling.GetBadRequestResult("Verify token failed", 400);
             }
         }
         private string CreateRandomCode()
@@ -242,12 +234,7 @@ namespace Booking_Airline.Repository.UserService
             var refreshToken = cookies["refreshToken"];
             if (refreshToken == null)
             {
-                var error = new ErrorModel
-                {
-                    StatusCode = 403, // Mã lỗi BadRequest,
-                    Message = "Verify token failed"
-                };
-                return new BadRequestObjectResult(error);
+                return _errorHandling.GetBadRequestResult("Verify token failed", 401);
             }
             var foundedUser = await _context.Users.Where(user => user.refreshTokens.Any(rf => rf.Token == refreshToken && rf.IsUsed == false)).FirstOrDefaultAsync();
             if (foundedUser == null)

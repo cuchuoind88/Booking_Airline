@@ -1,5 +1,6 @@
 using Booking_Airline.Models;
 using Booking_Airline.Repository.EmailService;
+using Booking_Airline.Repository.ErrorService;
 using Booking_Airline.Repository.UserService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -62,6 +63,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IUserModelFactory, UserModelFactory>();
+builder.Services.AddScoped<IErrorHandling, ErrorHandlingService>();
 builder.Services.AddSingleton(checkRefreshToken);
 var app = builder.Build();
 
