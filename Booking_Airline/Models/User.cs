@@ -11,5 +11,7 @@
         public bool IsVerified { get; set; }
         public ICollection<RoleModel> Roles { get; set; }
         public ICollection<RefreshToken> refreshTokens { get; set; }
+        public ICollection<TokenRemainLogin> tokenRemainLogins { get; set; }
+
     }
 }

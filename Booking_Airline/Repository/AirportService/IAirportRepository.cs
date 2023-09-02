@@ -5,10 +5,10 @@ namespace Booking_Airline.Repository.AirportService
 {
     public interface IAirportRepository
     {
-        public IActionResult GetAllAirport();
-        public IActionResult GetAirport(int AirportId);
-        public IActionResult CreateAirport(Airport airport);
-        public IActionResult UpdateAirport(int AirportId);
-        public IActionResult DeleteAirport(int AirportId);
+        public  Task<IActionResult> GetAllAirport();
+        public Task <IActionResult> GetAirport(int AirportId);
+        public Task <IActionResult> CreateAirport(Airport airport);
+        public Task <IActionResult> UpdateAirport(int AirportId);
+        public Task <IActionResult> DeleteAirport(int AirportId);
     }
 }

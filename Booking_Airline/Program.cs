@@ -1,4 +1,5 @@
 using Booking_Airline.Models;
+using Booking_Airline.Repository.AirportService;
 using Booking_Airline.Repository.EmailService;
 using Booking_Airline.Repository.ErrorService;
 using Booking_Airline.Repository.UserService;
@@ -39,6 +40,9 @@ var checkRefreshToken= new Microsoft.IdentityModel.Tokens.TokenValidationParamet
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddControllersWithViews().AddNewtonsoftJson(options =>
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -64,6 +68,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IUserModelFactory, UserModelFactory>();
 builder.Services.AddScoped<IErrorHandling, ErrorHandlingService>();
+builder.Services.AddScoped<IAirportRepository, AirportRepository>();
 builder.Services.AddSingleton(checkRefreshToken);
 var app = builder.Build();
 

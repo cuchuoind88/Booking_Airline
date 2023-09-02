@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Booking_Airline.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateMigrate : Migration
+    public partial class Addmigration3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -163,6 +163,27 @@ namespace Booking_Airline.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RoleModelUser",
                 columns: table => new
                 {
@@ -184,6 +205,27 @@ namespace Booking_Airline.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TokenRemainLogins",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TokenId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    IsExpired = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TokenRemainLogins", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TokenRemainLogins_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -280,6 +322,11 @@ namespace Booking_Airline.Migrations
                 column: "ReservationIDId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reservations_PassengerIDId",
                 table: "Reservations",
                 column: "PassengerIDId");
@@ -308,6 +355,11 @@ namespace Booking_Airline.Migrations
                 name: "IX_ServiceForClassTravelClass_TravelClassesId",
                 table: "ServiceForClassTravelClass",
                 column: "TravelClassesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TokenRemainLogins_UserId",
+                table: "TokenRemainLogins",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -317,10 +369,16 @@ namespace Booking_Airline.Migrations
                 name: "Payments");
 
             migrationBuilder.DropTable(
+                name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
                 name: "RoleModelUser");
 
             migrationBuilder.DropTable(
                 name: "ServiceForClassTravelClass");
+
+            migrationBuilder.DropTable(
+                name: "TokenRemainLogins");
 
             migrationBuilder.DropTable(
                 name: "Reservations");
@@ -329,10 +387,10 @@ namespace Booking_Airline.Migrations
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "ServiceForClasses");
 
             migrationBuilder.DropTable(
-                name: "ServiceForClasses");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Passengers");

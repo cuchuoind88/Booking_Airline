@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking_Airline.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230822031014_Refreshtoken_table")]
-    partial class Refreshtoken_table
+    [Migration("20230901095235_UpdateMigration_update_travelClas")]
+    partial class UpdateMigration_update_travelClas
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,17 +41,42 @@ namespace Booking_Airline.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AirportCountry")
+                    b.Property<string>("AirportName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AirportName")
+                    b.Property<int>("CountryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId");
+
+                    b.ToTable("Airports");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("contryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("countryCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Airports");
+                    b.ToTable("Countries");
                 });
 
             modelBuilder.Entity("Booking_Airline.Models.FlightDetail", b =>
@@ -66,11 +91,11 @@ namespace Booking_Airline.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ArrivalDate")
+                    b.Property<DateTime>("ArrivalTime")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DepartureDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("DepartureTime")
                         .HasColumnType("datetime2");
@@ -170,12 +195,6 @@ namespace Booking_Airline.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiredTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("IsUsed")
                         .HasColumnType("bit");
 
@@ -261,8 +280,8 @@ namespace Booking_Airline.Migrations
                     b.Property<int>("FilghtId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TicketPrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("FlightId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -296,7 +315,36 @@ namespace Booking_Airline.Migrations
                     b.ToTable("ServiceForClasses");
                 });
 
-            modelBuilder.Entity("Booking_Airline.Models.TravelClass", b =>
+            modelBuilder.Entity("Booking_Airline.Models.TicketPrice", b =>
+                {
+                    b.Property<int>("TicketPriceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TicketPriceId"));
+
+                    b.Property<int>("AvailableSeats")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClassID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FlightId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("TicketPriceId");
+
+                    b.HasIndex("ClassID");
+
+                    b.HasIndex("FlightId");
+
+                    b.ToTable("TicketPrice");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TokenRemainLogin", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -304,8 +352,30 @@ namespace Booking_Airline.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("TravelClassID")
+                    b.Property<bool>("IsExpired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TokenId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TokenRemainLogins");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TravelClass", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("TravelClassName")
                         .IsRequired()
@@ -382,6 +452,17 @@ namespace Booking_Airline.Migrations
                     b.ToTable("ServiceForClassTravelClass");
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.Airport", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.Country", "Country")
+                        .WithMany("Airports")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.FlightDetail", b =>
                 {
                     b.HasOne("Booking_Airline.Models.Airport", "DestinationAirport")
@@ -451,7 +532,7 @@ namespace Booking_Airline.Migrations
                         .IsRequired();
 
                     b.HasOne("Booking_Airline.Models.FlightDetail", "Filght")
-                        .WithMany()
+                        .WithMany("SeatDetails")
                         .HasForeignKey("FilghtId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -459,6 +540,36 @@ namespace Booking_Airline.Migrations
                     b.Navigation("Class");
 
                     b.Navigation("Filght");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TicketPrice", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.TravelClass", "TravelClass")
+                        .WithMany("TicketPrices")
+                        .HasForeignKey("ClassID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking_Airline.Models.FlightDetail", "FlightDetail")
+                        .WithMany("TickerPrices")
+                        .HasForeignKey("FlightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FlightDetail");
+
+                    b.Navigation("TravelClass");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TokenRemainLogin", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.User", "User")
+                        .WithMany("tokenRemainLogins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RoleModelUser", b =>
@@ -496,9 +607,28 @@ namespace Booking_Airline.Migrations
                     b.Navigation("Flights");
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.Country", b =>
+                {
+                    b.Navigation("Airports");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.FlightDetail", b =>
+                {
+                    b.Navigation("SeatDetails");
+
+                    b.Navigation("TickerPrices");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TravelClass", b =>
+                {
+                    b.Navigation("TicketPrices");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.User", b =>
                 {
                     b.Navigation("refreshTokens");
+
+                    b.Navigation("tokenRemainLogins");
                 });
 #pragma warning restore 612, 618
         }

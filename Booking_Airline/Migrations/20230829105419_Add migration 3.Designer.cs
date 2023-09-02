@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking_Airline.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230822093621_Update Refreshtoken_table")]
-    partial class UpdateRefreshtoken_table
+    [Migration("20230829105419_Add migration 3")]
+    partial class Addmigration3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -290,6 +290,31 @@ namespace Booking_Airline.Migrations
                     b.ToTable("ServiceForClasses");
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.TokenRemainLogin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsExpired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TokenId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TokenRemainLogins");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.TravelClass", b =>
                 {
                     b.Property<int>("Id")
@@ -455,6 +480,17 @@ namespace Booking_Airline.Migrations
                     b.Navigation("Filght");
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.TokenRemainLogin", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.User", "User")
+                        .WithMany("tokenRemainLogins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RoleModelUser", b =>
                 {
                     b.HasOne("Booking_Airline.Models.RoleModel", null)
@@ -493,6 +529,8 @@ namespace Booking_Airline.Migrations
             modelBuilder.Entity("Booking_Airline.Models.User", b =>
                 {
                     b.Navigation("refreshTokens");
+
+                    b.Navigation("tokenRemainLogins");
                 });
 #pragma warning restore 612, 618
         }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking_Airline.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230818033231_UpdateMigrate")]
-    partial class UpdateMigrate
+    [Migration("20230902082553_UpdateMigration_2_9_2023")]
+    partial class UpdateMigration_2_9_2023
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,84 @@ namespace Booking_Airline.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AddionalFoodServiceFlightDetail", b =>
+                {
+                    b.Property<int>("AddionalFoodServicesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("flightDetailsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AddionalFoodServicesId", "flightDetailsId");
+
+                    b.HasIndex("flightDetailsId");
+
+                    b.ToTable("AddionalFoodServiceFlightDetail");
+                });
+
+            modelBuilder.Entity("AddionalFoodServiceReservation", b =>
+                {
+                    b.Property<int>("AddionalFoodServicesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("reservationDetailsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AddionalFoodServicesId", "reservationDetailsId");
+
+                    b.HasIndex("reservationDetailsId");
+
+                    b.ToTable("AddionalFoodServiceReservation");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.AddionalFoodService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FoodDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FoodName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("FoodPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AddionalFoodService");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.AdditionalSeatService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("seatLevel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("seatPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("seatType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AdditionalSeatService");
+                });
 
             modelBuilder.Entity("Booking_Airline.Models.Airport", b =>
                 {
@@ -41,17 +119,42 @@ namespace Booking_Airline.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AirportCountry")
+                    b.Property<string>("AirportName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AirportName")
+                    b.Property<int>("CountryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId");
+
+                    b.ToTable("Airports");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("contryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("countryCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Airports");
+                    b.ToTable("Countries");
                 });
 
             modelBuilder.Entity("Booking_Airline.Models.FlightDetail", b =>
@@ -66,11 +169,11 @@ namespace Booking_Airline.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ArrivalDate")
+                    b.Property<DateTime>("ArrivalTime")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DepartureDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("DepartureTime")
                         .HasColumnType("datetime2");
@@ -92,6 +195,29 @@ namespace Booking_Airline.Migrations
                     b.HasIndex("SourceAirportId");
 
                     b.ToTable("FlightDetails");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.FoodForFlight", b =>
+                {
+                    b.Property<int>("FlightId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FoodId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FlightDetailId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FoodServiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("FlightId", "FoodId");
+
+                    b.HasIndex("FlightDetailId");
+
+                    b.HasIndex("FoodServiceId");
+
+                    b.ToTable("FoodForFlight");
                 });
 
             modelBuilder.Entity("Booking_Airline.Models.Passenger", b =>
@@ -162,6 +288,31 @@ namespace Booking_Airline.Migrations
                     b.ToTable("Payments");
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.Reservation", b =>
                 {
                     b.Property<int>("Id")
@@ -193,6 +344,21 @@ namespace Booking_Airline.Migrations
                     b.HasIndex("SeatDetailsIDId");
 
                     b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.ReservationMapAddionalFoodService", b =>
+                {
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AdditionalFoodServiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReservationId", "AdditionalFoodServiceId");
+
+                    b.HasIndex("AdditionalFoodServiceId");
+
+                    b.ToTable("ReservationMapAddionalFoodService");
                 });
 
             modelBuilder.Entity("Booking_Airline.Models.RoleModel", b =>
@@ -227,17 +393,26 @@ namespace Booking_Airline.Migrations
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FilghtId")
+                    b.Property<int>("FlightId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TicketPrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<bool>("IsBooked")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SeatAdditionalServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SeatCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClassId");
 
-                    b.HasIndex("FilghtId");
+                    b.HasIndex("FlightId");
+
+                    b.HasIndex("SeatAdditionalServiceId");
 
                     b.ToTable("SeatDetails");
                 });
@@ -253,6 +428,10 @@ namespace Booking_Airline.Migrations
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ServcieDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ServiceName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -265,7 +444,36 @@ namespace Booking_Airline.Migrations
                     b.ToTable("ServiceForClasses");
                 });
 
-            modelBuilder.Entity("Booking_Airline.Models.TravelClass", b =>
+            modelBuilder.Entity("Booking_Airline.Models.TicketPrice", b =>
+                {
+                    b.Property<int>("TicketPriceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TicketPriceId"));
+
+                    b.Property<int>("AvailableSeats")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClassID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FlightId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("TicketPriceId");
+
+                    b.HasIndex("ClassID");
+
+                    b.HasIndex("FlightId");
+
+                    b.ToTable("TicketPrice");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TokenRemainLogin", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -273,8 +481,30 @@ namespace Booking_Airline.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("TravelClassID")
+                    b.Property<bool>("IsExpired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TokenId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TokenRemainLogins");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TravelClass", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("TravelClassName")
                         .IsRequired()
@@ -351,6 +581,47 @@ namespace Booking_Airline.Migrations
                     b.ToTable("ServiceForClassTravelClass");
                 });
 
+            modelBuilder.Entity("AddionalFoodServiceFlightDetail", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.AddionalFoodService", null)
+                        .WithMany()
+                        .HasForeignKey("AddionalFoodServicesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking_Airline.Models.FlightDetail", null)
+                        .WithMany()
+                        .HasForeignKey("flightDetailsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AddionalFoodServiceReservation", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.AddionalFoodService", null)
+                        .WithMany()
+                        .HasForeignKey("AddionalFoodServicesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking_Airline.Models.Reservation", null)
+                        .WithMany()
+                        .HasForeignKey("reservationDetailsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.Airport", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.Country", "Country")
+                        .WithMany("Airports")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.FlightDetail", b =>
                 {
                     b.HasOne("Booking_Airline.Models.Airport", "DestinationAirport")
@@ -370,6 +641,25 @@ namespace Booking_Airline.Migrations
                     b.Navigation("SourceAirPort");
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.FoodForFlight", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.FlightDetail", "FlightDetail")
+                        .WithMany()
+                        .HasForeignKey("FlightDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking_Airline.Models.AddionalFoodService", "FoodService")
+                        .WithMany()
+                        .HasForeignKey("FoodServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FlightDetail");
+
+                    b.Navigation("FoodService");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.Payment", b =>
                 {
                     b.HasOne("Booking_Airline.Models.Reservation", "ReservationID")
@@ -379,6 +669,17 @@ namespace Booking_Airline.Migrations
                         .IsRequired();
 
                     b.Navigation("ReservationID");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.RefreshToken", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.User", "User")
+                        .WithMany("refreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Booking_Airline.Models.Reservation", b =>
@@ -400,6 +701,25 @@ namespace Booking_Airline.Migrations
                     b.Navigation("SeatDetailsID");
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.ReservationMapAddionalFoodService", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.AddionalFoodService", "AdditionalFoodService")
+                        .WithMany()
+                        .HasForeignKey("AdditionalFoodServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking_Airline.Models.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AdditionalFoodService");
+
+                    b.Navigation("Reservation");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.SeatDetails", b =>
                 {
                     b.HasOne("Booking_Airline.Models.TravelClass", "Class")
@@ -408,15 +728,53 @@ namespace Booking_Airline.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Booking_Airline.Models.FlightDetail", "Filght")
-                        .WithMany()
-                        .HasForeignKey("FilghtId")
+                    b.HasOne("Booking_Airline.Models.FlightDetail", "Flight")
+                        .WithMany("SeatDetails")
+                        .HasForeignKey("FlightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking_Airline.Models.AdditionalSeatService", "SeatAdditionalService")
+                        .WithMany("SeatDetails")
+                        .HasForeignKey("SeatAdditionalServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Class");
 
-                    b.Navigation("Filght");
+                    b.Navigation("Flight");
+
+                    b.Navigation("SeatAdditionalService");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TicketPrice", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.TravelClass", "TravelClass")
+                        .WithMany("TicketPrices")
+                        .HasForeignKey("ClassID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Booking_Airline.Models.FlightDetail", "FlightDetail")
+                        .WithMany("TickerPrices")
+                        .HasForeignKey("FlightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FlightDetail");
+
+                    b.Navigation("TravelClass");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TokenRemainLogin", b =>
+                {
+                    b.HasOne("Booking_Airline.Models.User", "User")
+                        .WithMany("tokenRemainLogins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RoleModelUser", b =>
@@ -449,9 +807,38 @@ namespace Booking_Airline.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Booking_Airline.Models.AdditionalSeatService", b =>
+                {
+                    b.Navigation("SeatDetails");
+                });
+
             modelBuilder.Entity("Booking_Airline.Models.Airport", b =>
                 {
                     b.Navigation("Flights");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.Country", b =>
+                {
+                    b.Navigation("Airports");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.FlightDetail", b =>
+                {
+                    b.Navigation("SeatDetails");
+
+                    b.Navigation("TickerPrices");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.TravelClass", b =>
+                {
+                    b.Navigation("TicketPrices");
+                });
+
+            modelBuilder.Entity("Booking_Airline.Models.User", b =>
+                {
+                    b.Navigation("refreshTokens");
+
+                    b.Navigation("tokenRemainLogins");
                 });
 #pragma warning restore 612, 618
         }

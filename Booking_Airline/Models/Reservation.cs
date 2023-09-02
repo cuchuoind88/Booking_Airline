@@ -7,6 +7,7 @@
         public SeatDetails SeatDetailsID { get; set; }
         public DateTime DateOfReservation { get; set; }
         public string RervationCode { get; set; }
+        public ICollection<AddionalFoodService> AddionalFoodServices { get; set; }
         public bool IsConfirmed { get; set; }
     }
 }
