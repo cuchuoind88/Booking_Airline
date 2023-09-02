@@ -1,17 +1,22 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Booking_Airline.Repository.AirportService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking_Airline.Controllers
 {
     [ApiController]
     public class AirportController : Controller
-    {
-        [HttpGet]
-        [Route("/airport")]
-        [Authorize(Roles ="User, Admin")]
-        public IActionResult GetListAirport()
+    {   private readonly IAirportRepository airportRepository;
+        public AirportController(IAirportRepository airportRepository)
         {
-            return new OkObjectResult("OK , SUCCESSFULL");
+             this.airportRepository = airportRepository;
+        }
+        [HttpGet]
+        [Route("/airport/GetAirports")]
+        public async Task<IActionResult> GetListAirport()
+        {
+            var result=await airportRepository.GetAllAirport();
+            return result;
         }
     }
 }
