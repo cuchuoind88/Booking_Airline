@@ -1,6 +1,8 @@
-﻿using Booking_Airline.DTOs;
+﻿
 
-namespace Booking_Airline.Repository.EmailService
+using Booking_Airline.DTOs;
+
+namespace Booking_Airline.Repository.EmailRepository
 {
     public interface IEmailRepository
     {

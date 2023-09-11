@@ -1,10 +1,10 @@
-﻿
+﻿using Booking_Airline.DTOs.UserDTOs;
 using Booking_Airline.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Booking_Airline.Repository.UserService
+namespace Booking_Airline.Serivces.AuthenticationService
 {
-    public interface IUserRepository
+    public interface IAuthenService
     {
         public Task<IActionResult> Register(UserRegisterDTO request);
         public Task<IActionResult> Login(UserLoginDTO request, IRequestCookieCollection cookies, IResponseCookies resCookies);

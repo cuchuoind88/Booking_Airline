@@ -1,12 +1,10 @@
 using Booking_Airline.Models;
 using Booking_Airline.Repository.AirportService;
-using Booking_Airline.Repository.EmailService;
-using Booking_Airline.Repository.ErrorService;
-using Booking_Airline.Repository.UserService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
+using Booking_Airline.Extensions;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,20 +62,21 @@ builder.Services.AddAuthentication(options =>
 
     options.TokenValidationParameters = tokenWithFullCheck;
 });
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IEmailRepository, EmailRepository>();
-builder.Services.AddScoped<IUserModelFactory, UserModelFactory>();
-builder.Services.AddScoped<IErrorHandling, ErrorHandlingService>();
-builder.Services.AddScoped<IAirportRepository, AirportRepository>();
+builder.Services.AddAutoMapper(typeof(Program));//REGISTER AUTOMAPPER SERVICE
+builder.Services.ConfigureRepositoryManager();//REGISTER REPOSITORY MANAGER SERIVICE
+builder.Services.ConfigureServiceManager();
+builder.Services.ConfigureCors();
 builder.Services.AddSingleton(checkRefreshToken);
 var app = builder.Build();
-
+app.ConfigureExceptionHandler();
+app.UseCors("CorsPolicy");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseAuthentication();
 app.UseAuthorization();
 

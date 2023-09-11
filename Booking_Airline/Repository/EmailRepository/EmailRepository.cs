@@ -1,11 +1,11 @@
-﻿using Booking_Airline.DTOs;
+﻿
+using Booking_Airline.DTOs;
 using System.Net.Mail;
 
-namespace Booking_Airline.Repository.EmailService
-{
-    public class EmailRepository : IEmailRepository
+namespace Booking_Airline.Repository.EmailRepository;
+    public class EmailRepository :IEmailRepository
     {
-        public readonly IConfiguration _config;
+        private readonly IConfiguration _config;
 
         public EmailRepository(IConfiguration config)
         {
@@ -33,5 +33,7 @@ namespace Booking_Airline.Repository.EmailService
                 smtp.Send(mail);
             }
         }
+
+      
     }
-}
+

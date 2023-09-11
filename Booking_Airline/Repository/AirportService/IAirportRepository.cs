@@ -8,7 +8,7 @@ namespace Booking_Airline.Repository.AirportService
         public  Task<IActionResult> GetAllAirport();
         public Task <IActionResult> GetAirport(int AirportId);
         public Task <IActionResult> CreateAirport(Airport airport);
-        public Task <IActionResult> UpdateAirport(int AirportId);
+        public Task <IActionResult> UpdateAirport(int AirportId, Airport updatedAirport);
         public Task <IActionResult> DeleteAirport(int AirportId);
     }
 }
