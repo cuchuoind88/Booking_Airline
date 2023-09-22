@@ -2,7 +2,7 @@
 {
     public class AdditionalSeatService
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string seatLevel { get; set; }
         public string seatType { get; set; }
         public decimal seatPrice { get; set; }

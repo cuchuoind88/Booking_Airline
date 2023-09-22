@@ -15,9 +15,9 @@ namespace Booking_Airline.Repository.RefreshTokenRepository
 
         }
 
-        public async Task<IEnumerable<RefreshToken>> GetTokenByUserID(string userId,bool TrackChanges)
+        public async Task<IEnumerable<RefreshToken>> GetTokenByUserID(Guid userId,bool TrackChanges)
         {
-            return await FindByCondition(t => t.UserId == int.Parse(userId), TrackChanges)
+            return await FindByCondition(t => t.UserId.Equals(userId), TrackChanges)
                 .ToListAsync();
         }
         public void CreateToken(RefreshToken token) => Create(token);

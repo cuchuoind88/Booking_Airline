@@ -2,7 +2,7 @@
 {
     public class Reservation
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public Passenger PassengerID { get; set; }
         public SeatDetails SeatDetailsID { get; set; }
         public DateTime DateOfReservation { get; set; }

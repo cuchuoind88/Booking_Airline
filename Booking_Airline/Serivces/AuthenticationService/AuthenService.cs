@@ -64,7 +64,7 @@ namespace Booking_Airline.Serivces.AuthenticationService
                     throw new TokenException("Invalid token");
                 }
                 //TH2:Delete All Family Refresh Token
-                var tokensToUpdate = await repositoryManager.RefreshTokenRepository.GetTokenByUserID(principal.FindFirst("UserId").Value,true);
+                var tokensToUpdate = await repositoryManager.RefreshTokenRepository.GetTokenByUserID(Guid.Parse(principal.FindFirst("UserId").Value), true);
                 foreach (var token in  tokensToUpdate)
                 {
                     token.IsUsed = true;
@@ -155,7 +155,7 @@ namespace Booking_Airline.Serivces.AuthenticationService
                     //If principal return object ClaimsPrincipal => Token is Used in the part 
                     //Update all family token to INVALID
                   
-                    var tokensToUpdate = await repositoryManager.RefreshTokenRepository.GetTokenByUserID(principal.FindFirst("UserId").Value, true);
+                    var tokensToUpdate = await repositoryManager.RefreshTokenRepository.GetTokenByUserID(Guid.Parse(principal.FindFirst("UserId").Value), true);
                     foreach (var token in tokensToUpdate)
                     {
                         token.IsUsed = true;

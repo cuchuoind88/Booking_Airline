@@ -44,7 +44,7 @@ namespace Booking_Airline.Models
             //Relation between FlightDetails and TicketPrice
             modelBuilder.Entity<TicketPrice>()
               .HasOne(a => a.FlightDetail)
-              .WithMany(c => c.TickerPrices)
+              .WithMany(c => c.TicketPrices)
               .HasForeignKey(tk => tk.FlightId);
             //Relation between TicketPrice and TraveClass
             modelBuilder.Entity<TicketPrice>()

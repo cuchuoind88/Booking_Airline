@@ -38,7 +38,7 @@ namespace Booking_Airline.Repository.RepositoryBase
           .AsNoTracking() :
           RepositoryContext.Set<T>()
           .Where(expression);
-
+        
         public void Update(T entity)
         {
             RepositoryContext.Set<T>().Add(entity);

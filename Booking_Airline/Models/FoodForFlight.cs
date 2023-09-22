@@ -2,9 +2,9 @@
 {
     public class FoodForFlight
     {
-        public int FoodId { get; set; }
+        public Guid FoodId { get; set; }
         public AddionalFoodService FoodService { get; set; }
-        public int FlightId { get; set; }
+        public Guid FlightId { get; set; }
         public FlightDetail FlightDetail { get; set; }
     }
 }

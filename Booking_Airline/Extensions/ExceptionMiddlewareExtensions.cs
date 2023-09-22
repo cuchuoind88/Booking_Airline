@@ -21,6 +21,7 @@ namespace Booking_Airline.Extensions
                         {
                             NotFoundException => StatusCodes.Status404NotFound,
                             NotVerifiedException => StatusCodes.Status401Unauthorized,
+                            BadRequestException => StatusCodes.Status400BadRequest,
                             _ => StatusCodes.Status500InternalServerError
                         };
                         await context.Response.WriteAsync(new ErrorDetails()

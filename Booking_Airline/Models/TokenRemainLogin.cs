@@ -2,10 +2,10 @@
 {
     public class TokenRemainLogin
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string TokenId { get; set; }
         //Navigate property
-        public int UserId { get;set; }
+        public Guid UserId { get;set; }
         public User User { get; set; }
         public bool IsExpired { get; set; }
     }

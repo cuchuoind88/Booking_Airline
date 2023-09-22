@@ -12,11 +12,12 @@ namespace Booking_Airline.Repository.RoleRepository
 
         public async Task<RoleModel> GetRole(string role, bool tracking) =>
             await FindByCondition(r => r.RoleName == role, tracking).FirstOrDefaultAsync();
-        
 
-        public async Task<List<string>> GetRoleModelsByUserId( int userId,bool tracking) =>
-            await FindByCondition(role => role.Users.Any(user => user.Id == userId),tracking).Select(role => role.RoleName)
-           .ToListAsync();
+
+        public async Task<List<string>> GetRoleModelsByUserId(Guid userId, bool tracking) =>
+            await FindByCondition(role => role.Users.Any(user => user.Id.Equals(userId)), tracking).Select(role => role.RoleName)
+            .ToListAsync();
+          
         
     }
 }

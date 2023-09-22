@@ -1,11 +1,10 @@
-﻿namespace Booking_Airline.Models
+﻿namespace Booking_Airline.DTOs.CountryDTOs
 {
-    public class Country
+    public record CountyDTOs
     {
         public Guid Id { get; set; }
         public string contryName { get; set; }
         public string countryCode { get; set; }
         public bool Active { get; set; }
-        public ICollection<Airport> Airports { get; set; }
     }
 }

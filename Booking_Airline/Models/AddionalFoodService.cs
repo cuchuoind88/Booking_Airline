@@ -2,7 +2,7 @@
 {
     public class AddionalFoodService
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string FoodName { get; set; }
 
         public string FoodDescription { get; set;}

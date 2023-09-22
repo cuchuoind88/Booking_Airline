@@ -1,4 +1,6 @@
-﻿using Booking_Airline.Repository.EmailRepository;
+﻿using Booking_Airline.Repository.AirportRepository;
+using Booking_Airline.Repository.CountriesRepository;
+using Booking_Airline.Repository.EmailRepository;
 using Booking_Airline.Repository.RefreshTokenRepository;
 using Booking_Airline.Repository.RoleRepository;
 using Booking_Airline.Repository.UserRepository;
@@ -10,6 +12,8 @@ namespace Booking_Airline.REPOSITORYMANAGER
         IRefreshTokenRepository RefreshTokenRepository { get; }
         IRoleRepository RoleRepository { get; }
         IEmailRepository emailRepository { get; }
+        ICountryRepository countryRepository { get; }
+        IAirportRepository airportRepository { get; }
         Task SaveAync();
     }
 }

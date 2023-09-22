@@ -9,13 +9,13 @@
 //    {
 //        public ApplicationDbContext _context;
 //        public IErrorHandling _errorHandling;
-//        public AirportRepository( ApplicationDbContext context , IErrorHandling errorHandling)
+//        public AirportRepository(ApplicationDbContext context, IErrorHandling errorHandling)
 //        {
 //            _context = context;
 //            _errorHandling = errorHandling;
 
 //        }
-        
+
 //        public async Task<IActionResult> CreateAirport(Airport airport)
 //        {
 //            try
@@ -65,13 +65,13 @@
 //            catch (Exception ex)
 //            {
 //                return _errorHandling.GetBadRequestResult($"Error: {ex.Message}", 500);
-//            } 
-            
+//            }
+
 //        }
 
 //        public async Task<IActionResult> GetAirport(int AirportId)
 //        {
-//           try
+//            try
 //            {
 //                var airport = await _context.Airports.FindAsync(AirportId);
 
@@ -83,7 +83,7 @@
 //                return new JsonResult(new
 //                {
 //                    Message = "Get Airport successfull <3",
-//                    Airport=airport
+//                    Airport = airport
 //                });
 //            }
 //            catch (Exception ex)
@@ -94,13 +94,12 @@
 
 //        public async Task<IActionResult> GetAllAirport()
 //        {   //Projection query
-//            var result  = await _context.Countries
+//            var result = await _context.Countries
 //                            .Select(c => new
 //                            {
 //                                c.Id,
 //                                c.contryName,
 //                                c.countryCode,
-//                                c.Active,
 //                                Airports = c.Airports.Select(a => new
 //                                {
 //                                    a.Id,
@@ -113,12 +112,12 @@
 //                            })
 //                            .ToListAsync();
 
-//                    return new OkObjectResult(new
-//                    {
-//                        Message = "Query successful",
-//                        Airports = result
-//                    });
-//                }
+//            return new OkObjectResult(new
+//            {
+//                Message = "Query successful",
+//                Airports = result
+//            });
+//        }
 
 //        public async Task<IActionResult> UpdateAirport(int AirportId, Airport updatedAirport)
 //        {
@@ -135,8 +134,8 @@
 
 //                // Cập nhật thông tin của sân bay từ updatedAirport
 //                existingAirport.AirportName = updatedAirport.AirportName;
-//                existingAirport.CountryId = updatedAirport.CountryId;
-//                existingAirport.AirportCode = updatedAirport.AirportCode;
+//                //existingAirport.CountryId = updatedAirport.CountryId;
+//                //existingAirport.AirportCode = updatedAirport.AirportCode;
 //                existingAirport.AirportCity = updatedAirport.AirportCity;
 
 //                // Lưu thay đổi vào cơ sở dữ liệu
